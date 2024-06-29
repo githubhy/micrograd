@@ -1,5 +1,17 @@
 import torch
-from micrograd.engine import Value
+
+try:
+    from micrograd.engine import Value
+except ImportError:
+    import sys
+    import os
+    sys.path.insert(0, os.getcwd())
+    from micrograd.engine import Value
+
+def pp(*args):
+    print("********")
+    for a in args:
+        print(a)
 
 def test_sanity_check():
 
@@ -24,6 +36,8 @@ def test_sanity_check():
     assert ymg.data == ypt.data.item()
     # backward pass went well
     assert xmg.grad == xpt.grad.item()
+
+    pp(ymg.data, xmg.grad)
 
 def test_more_ops():
 
@@ -66,6 +80,7 @@ def test_more_ops():
     assert abs(amg.grad - apt.grad.item()) < tol
     assert abs(bmg.grad - bpt.grad.item()) < tol
 
+    pp(gmg.data, amg.grad, bmg.grad)
 
 def test_duplicate_backprop():
     a = Value(1.0)
@@ -84,3 +99,8 @@ def test_duplicate_backprop():
     assert a.grad.item() == 8.
     assert b.grad.item() == 8.
     assert c.grad.item() == 1.
+
+if __name__ == '__main__':
+    test_sanity_check()
+    test_more_ops()
+    test_duplicate_backprop()
